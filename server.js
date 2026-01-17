@@ -7,10 +7,14 @@ require('dotenv').config();
 
 
 const app = express();
+const attemptRoutes = require('./routes/attempt');
+const leaderboardRoutes = require('./routes/leaderboard');
 
 app.use(cors());
 app.use(express.json());
 app.use('/api/quiz', quizRoutes);
+app.use('/api/attempt', attemptRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
 
 
 app.get('/', (req, res) => {
