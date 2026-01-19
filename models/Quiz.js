@@ -11,6 +11,11 @@ const QuizSchema = new mongoose.Schema({
     required: true
   },
 
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+
   createdAt: {
     type: Date,
     default: Date.now

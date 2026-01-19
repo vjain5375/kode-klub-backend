@@ -7,6 +7,12 @@ const AttemptSchema = new mongoose.Schema({
     required: true
   },
 
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: false
+  },
+
   studentName: {
     type: String,
     required: true,
@@ -19,7 +25,7 @@ const AttemptSchema = new mongoose.Schema({
   },
 
   answers: {
-    type: [Number],
+    type: [Number], // Storing indices of selected options
     required: true
   },
 
