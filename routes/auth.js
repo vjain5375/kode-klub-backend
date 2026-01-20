@@ -4,6 +4,8 @@ const User = require('../models/User');
 const { protect } = require('../middleware/authMiddleware');
 const passport = require('../config/passport');
 
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+
 const router = express.Router();
 
 // Generate JWT token
@@ -91,14 +93,14 @@ router.get('/google',
 router.get('/google/callback',
     passport.authenticate('google', {
         session: false,
-        failureRedirect: 'http://localhost:3000/login?error=auth_failed'
+        failureRedirect: `${FRONTEND_URL}/login?error=auth_failed`
     }),
     (req, res) => {
         // Generate JWT token
         const token = generateToken(req.user._id);
 
         // Redirect to frontend with token
-        res.redirect(`http://localhost:3000/login?token=${token}`);
+        res.redirect(`${FRONTEND_URL}/login?token=${token}`);
     }
 );
 
