@@ -40,7 +40,7 @@ app.use(require('./middleware/visitorTracking'));
 
 
 app.get('/', (req, res) => {
-  res.send('WebXplore Backend Running');
+  res.send('Kode Club Backend Running');
 });
 
 mongoose.connect(process.env.MONGO_URI)
