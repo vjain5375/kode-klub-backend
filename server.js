@@ -33,6 +33,10 @@ app.use('/api/attempt', attemptRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/dpp', dppRoutes);
+app.use('/api/admin', require('./routes/admin'));
+
+// Track visits
+app.use(require('./middleware/visitorTracking'));
 
 
 app.get('/', (req, res) => {

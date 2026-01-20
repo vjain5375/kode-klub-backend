@@ -1,6 +1,6 @@
 const express = require('express');
 const Quiz = require('../models/Quiz');
-const authMiddleware = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -74,7 +74,7 @@ router.get('/active', async (req, res) => {
   }
 });
 
-router.post('/create', authMiddleware, async (req, res) => {
+router.post('/create', protect, async (req, res) => {
   // Check for admin role
   if (req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Access denied. Admin only.' });
@@ -143,7 +143,7 @@ router.get('/:id', async (req, res) => {
 
 
 // DELETE /:id - Delete quiz (Admin only)
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', protect, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Access denied' });
   }
@@ -163,7 +163,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
 
 // PUT /:id - Update quiz (Admin only)
 // PUT /:id - Update quiz (Admin only)
-router.put('/:id', authMiddleware, async (req, res) => {
+router.put('/:id', protect, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Access denied' });
   }
@@ -197,7 +197,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
 });
 
 // PATCH /:id/toggle - Toggle quiz active status (Admin only)
-router.patch('/:id/toggle', authMiddleware, async (req, res) => {
+router.patch('/:id/toggle', protect, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Access denied' });
   }
@@ -222,7 +222,7 @@ router.patch('/:id/toggle', authMiddleware, async (req, res) => {
 });
 
 // PATCH /:id/toggle-leaderboard - Toggle leaderboard visibility (Admin only)
-router.patch('/:id/toggle-leaderboard', authMiddleware, async (req, res) => {
+router.patch('/:id/toggle-leaderboard', protect, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Access denied' });
   }

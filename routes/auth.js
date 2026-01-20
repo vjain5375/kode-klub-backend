@@ -1,7 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const authMiddleware = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware');
 const passport = require('../config/passport');
 
 const router = express.Router();
@@ -70,7 +70,7 @@ router.post('/login', async (req, res) => {
 });
 
 // GET /api/auth/me - Get current user (protected)
-router.get('/me', authMiddleware, async (req, res) => {
+router.get('/me', protect, async (req, res) => {
     res.json({ user: req.user.toJSON() });
 });
 

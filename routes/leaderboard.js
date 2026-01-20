@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const Attempt = require('../models/Attempt');
 const Quiz = require('../models/Quiz');
 const Settings = require('../models/Settings');
-const authMiddleware = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -132,7 +132,7 @@ router.get('/overall', async (req, res) => {
 });
 
 // ADMIN: Get all leaderboards for dashboard
-router.get('/admin/all', authMiddleware, async (req, res) => {
+router.get('/admin/all', protect, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Access denied' });
   }
@@ -175,7 +175,7 @@ router.get('/admin/all', authMiddleware, async (req, res) => {
 });
 
 // ADMIN: Toggle overall leaderboard visibility
-router.patch('/admin/toggle-overall', authMiddleware, async (req, res) => {
+router.patch('/admin/toggle-overall', protect, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Access denied' });
   }

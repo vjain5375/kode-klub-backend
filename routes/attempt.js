@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Quiz = require('../models/Quiz');
 const Attempt = require('../models/Attempt');
-const authMiddleware = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware');
 const jwt = require('jsonwebtoken');
 
 const router = express.Router();
@@ -23,7 +23,7 @@ const getUserFromToken = (req) => {
 };
 
 // GET /api/attempt/all - Get all attempts (Admin only)
-router.get('/all', authMiddleware, async (req, res) => {
+router.get('/all', protect, async (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Access denied' });
   }
@@ -41,7 +41,7 @@ router.get('/all', authMiddleware, async (req, res) => {
 });
 
 // GET /api/attempt/history - Get user's attempt history
-router.get('/history', authMiddleware, async (req, res) => {
+router.get('/history', protect, async (req, res) => {
   try {
     const attempts = await Attempt.find({ userId: req.user._id })
       .populate('quizId', 'title quizData.quizTitle')

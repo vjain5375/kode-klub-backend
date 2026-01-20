@@ -1,6 +1,6 @@
 const express = require('express');
 const DPP = require('../models/DPP');
-const authMiddleware = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -18,7 +18,7 @@ router.get('/all', async (req, res) => {
 });
 
 // GET all DPPs for admin (includes inactive)
-router.get('/admin/all', authMiddleware, async (req, res) => {
+router.get('/admin/all', protect, async (req, res) => {
     if (req.user.role !== 'admin') {
         return res.status(403).json({ message: 'Access denied' });
     }
@@ -50,7 +50,7 @@ router.get('/:slug', async (req, res) => {
 });
 
 // POST create new DPP (Admin only)
-router.post('/create', authMiddleware, async (req, res) => {
+router.post('/create', protect, async (req, res) => {
     if (req.user.role !== 'admin') {
         return res.status(403).json({ message: 'Access denied' });
     }
@@ -83,7 +83,7 @@ router.post('/create', authMiddleware, async (req, res) => {
 });
 
 // PUT update DPP (Admin only)
-router.put('/:id', authMiddleware, async (req, res) => {
+router.put('/:id', protect, async (req, res) => {
     if (req.user.role !== 'admin') {
         return res.status(403).json({ message: 'Access denied' });
     }
@@ -108,7 +108,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
 });
 
 // PATCH toggle DPP status (Admin only)
-router.patch('/:id/toggle', authMiddleware, async (req, res) => {
+router.patch('/:id/toggle', protect, async (req, res) => {
     if (req.user.role !== 'admin') {
         return res.status(403).json({ message: 'Access denied' });
     }
@@ -132,7 +132,7 @@ router.patch('/:id/toggle', authMiddleware, async (req, res) => {
 });
 
 // DELETE DPP (Admin only)
-router.delete('/:id', authMiddleware, async (req, res) => {
+router.delete('/:id', protect, async (req, res) => {
     if (req.user.role !== 'admin') {
         return res.status(403).json({ message: 'Access denied' });
     }
