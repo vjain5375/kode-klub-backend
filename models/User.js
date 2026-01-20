@@ -11,8 +11,15 @@ const UserSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
+        required: function () {
+            return !this.googleId; // Password not required for Google OAuth users
+        },
         minlength: 6
+    },
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true // Allows null values while maintaining uniqueness
     },
     name: {
         type: String,
@@ -21,8 +28,8 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['user', 'admin'],
-        default: 'user'
+        enum: ['user', 'admin', 'student'],
+        default: 'student'
     },
     createdAt: {
         type: Date,

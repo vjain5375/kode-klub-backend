@@ -1,8 +1,10 @@
+require('dotenv').config();
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const quizRoutes = require('./routes/quiz');
-require('dotenv').config();
+const passport = require('./config/passport');
 
 
 
@@ -10,12 +12,16 @@ const app = express();
 const attemptRoutes = require('./routes/attempt');
 const leaderboardRoutes = require('./routes/leaderboard');
 const authRoutes = require('./routes/auth');
+const dppRoutes = require('./routes/dpp');
 
 app.use(cors({
   origin: ['http://localhost:3000', 'http://localhost:3001'],
   credentials: true
 }));
 app.use(express.json());
+
+// Initialize Passport
+app.use(passport.initialize());
 
 // Request logging
 app.use((req, res, next) => {
@@ -26,6 +32,7 @@ app.use('/api/quiz', quizRoutes);
 app.use('/api/attempt', attemptRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/dpp', dppRoutes);
 
 
 app.get('/', (req, res) => {

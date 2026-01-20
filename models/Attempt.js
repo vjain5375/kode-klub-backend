@@ -10,7 +10,7 @@ const AttemptSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: false
+    required: true // CRITICAL: Must be linked to an account
   },
 
   studentName: {
@@ -44,5 +44,8 @@ const AttemptSchema = new mongoose.Schema({
     default: Date.now
   }
 });
+
+// CRITICAL: Ensure one attempt per user per quiz at Database Level
+AttemptSchema.index({ quizId: 1, userId: 1 }, { unique: true });
 
 module.exports = mongoose.model('Attempt', AttemptSchema);

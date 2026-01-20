@@ -16,6 +16,11 @@ const QuizSchema = new mongoose.Schema({
     default: true
   },
 
+  showLeaderboard: {
+    type: Boolean,
+    default: false  // Hidden by default, admin must enable
+  },
+
   createdAt: {
     type: Date,
     default: Date.now

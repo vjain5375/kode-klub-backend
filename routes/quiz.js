@@ -121,13 +121,16 @@ router.get('/:id', async (req, res) => {
       _id: quiz._id,
       title: quiz.title,
       createdAt: quiz.createdAt,
+      showLeaderboard: quiz.showLeaderboard || false,
       quizData: {
         quizTitle: quiz.quizData.quizTitle,
         questions: quiz.quizData.questions.map(q => ({
           id: q.id,
           question: q.question,
           image: q.image || null,
-          options: q.options
+          options: q.options,
+          correctAnswer: q.correctAnswer, // Include for results page
+          explanation: q.explanation || null // Include for results page
         }))
       }
     };
@@ -212,6 +215,31 @@ router.patch('/:id/toggle', authMiddleware, async (req, res) => {
     res.json({
       message: `Quiz ${quiz.isActive ? 'activated' : 'deactivated'} successfully`,
       isActive: quiz.isActive
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// PATCH /:id/toggle-leaderboard - Toggle leaderboard visibility (Admin only)
+router.patch('/:id/toggle-leaderboard', authMiddleware, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Access denied' });
+  }
+
+  try {
+    const quiz = await Quiz.findById(req.params.id);
+    if (!quiz) {
+      return res.status(404).json({ message: 'Quiz not found' });
+    }
+
+    // Toggle the showLeaderboard status
+    quiz.showLeaderboard = !quiz.showLeaderboard;
+    await quiz.save();
+
+    res.json({
+      message: `Leaderboard ${quiz.showLeaderboard ? 'enabled' : 'disabled'} for students`,
+      showLeaderboard: quiz.showLeaderboard
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

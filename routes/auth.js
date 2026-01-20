@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const authMiddleware = require('../middleware/authMiddleware');
+const passport = require('../config/passport');
 
 const router = express.Router();
 
@@ -77,5 +78,28 @@ router.get('/me', authMiddleware, async (req, res) => {
 router.post('/logout', (req, res) => {
     res.json({ message: 'Logged out successfully' });
 });
+
+// GET /api/auth/google - Initiate Google OAuth
+router.get('/google',
+    passport.authenticate('google', {
+        scope: ['profile', 'email'],
+        session: false
+    })
+);
+
+// GET /api/auth/google/callback - Google OAuth callback
+router.get('/google/callback',
+    passport.authenticate('google', {
+        session: false,
+        failureRedirect: 'http://localhost:3000/login?error=auth_failed'
+    }),
+    (req, res) => {
+        // Generate JWT token
+        const token = generateToken(req.user._id);
+
+        // Redirect to frontend with token
+        res.redirect(`http://localhost:3000/login?token=${token}`);
+    }
+);
 
 module.exports = router;
