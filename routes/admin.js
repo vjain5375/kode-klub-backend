@@ -14,19 +14,35 @@ const Attempt = require('../models/Attempt'); // Ensure Attempt is imported
 // @access  Admin
 router.post('/cleanup-duplicates', protect, admin, async (req, res) => {
     try {
-        // 1. Find all attempts
-        const allAttempts = await Attempt.find({}).sort({ score: -1, createdAt: -1 });
+        // 1. Find all attempts and POPULATE user details to get email
+        const allAttempts = await Attempt.find({})
+            .populate('userId', 'email') // Get the actual email from User model
+            .sort({ score: -1, createdAt: -1 });
 
         const seen = new Set();
         const duplicates = [];
 
         // 2. Identify duplicates
         for (const attempt of allAttempts) {
-            // Create a unique key based on Quiz ID and User ID (or Student ID/Email)
-            const key = `${attempt.quizId}-${attempt.userId || attempt.studentId}`;
+            // Determine the unique identifier (Email is best, fallback to User ID, then studentId)
+            let uniqueId = null;
+
+            if (attempt.userId && attempt.userId.email) {
+                uniqueId = attempt.userId.email;
+            } else if (attempt.studentId) {
+                uniqueId = attempt.studentId;
+            } else if (attempt.userId) {
+                uniqueId = attempt.userId.toString(); // Fallback to ID if email populate failed
+            } else {
+                continue; // Can't identify user, skip
+            }
+
+            // Create unique key: Quiz + UserIdentity
+            const key = `${attempt.quizId}-${uniqueId}`;
 
             if (seen.has(key)) {
                 // If we've seen this key (better score was already processed due to sort), this is a dupe
+                console.log(`Found duplicate for ${uniqueId} on quiz ${attempt.quizId}`);
                 duplicates.push(attempt._id);
             } else {
                 seen.add(key);
