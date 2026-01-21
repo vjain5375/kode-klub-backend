@@ -7,6 +7,51 @@ const { protect, admin } = require('../middleware/authMiddleware');
 // @route   GET /api/admin/stats
 // @desc    Get dashboard stats
 // @access  Admin
+const Attempt = require('../models/Attempt'); // Ensure Attempt is imported
+
+// @route   POST /api/admin/cleanup-duplicates
+// @desc    Remove duplicate attempts (keep highest score)
+// @access  Admin
+router.post('/cleanup-duplicates', protect, admin, async (req, res) => {
+    try {
+        // 1. Find all attempts
+        const allAttempts = await Attempt.find({}).sort({ score: -1, createdAt: -1 });
+
+        const seen = new Set();
+        const duplicates = [];
+
+        // 2. Identify duplicates
+        for (const attempt of allAttempts) {
+            // Create a unique key based on Quiz ID and User ID (or Student ID/Email)
+            const key = `${attempt.quizId}-${attempt.userId || attempt.studentId}`;
+
+            if (seen.has(key)) {
+                // If we've seen this key (better score was already processed due to sort), this is a dupe
+                duplicates.push(attempt._id);
+            } else {
+                seen.add(key);
+            }
+        }
+
+        // 3. Delete duplicates
+        if (duplicates.length > 0) {
+            await Attempt.deleteMany({ _id: { $in: duplicates } });
+        }
+
+        res.json({
+            message: `Cleanup complete. Removed ${duplicates.length} duplicate entries.`,
+            removedCount: duplicates.length
+        });
+
+    } catch (error) {
+        console.error("Cleanup Error:", error);
+        res.status(500).json({ message: 'Failed to cleanup duplicates' });
+    }
+});
+
+// @route   GET /api/admin/stats
+// @desc    Get dashboard stats
+// @access  Admin
 router.get('/stats', protect, admin, async (req, res) => {
     try {
         const userCount = await User.countDocuments();
