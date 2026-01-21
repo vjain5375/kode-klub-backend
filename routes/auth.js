@@ -13,6 +13,11 @@ const generateToken = (userId) => {
     return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
 };
 
+// Helper to get IP
+const getIp = (req) => {
+    return req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+};
+
 // POST /api/auth/register - Register new user
 router.post('/register', async (req, res) => {
     try {
@@ -25,7 +30,12 @@ router.post('/register', async (req, res) => {
         }
 
         // Create user
-        const user = new User({ email, password, name });
+        const user = new User({
+            email,
+            password,
+            name,
+            ipAddress: getIp(req)
+        });
         await user.save();
 
         // Generate token
@@ -57,6 +67,10 @@ router.post('/login', async (req, res) => {
         if (!isMatch) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
+
+        // Update IP
+        user.ipAddress = getIp(req);
+        await user.save();
 
         // Generate token
         const token = generateToken(user._id);
@@ -96,6 +110,19 @@ router.get('/google/callback',
         failureRedirect: `${FRONTEND_URL}/login?error=auth_failed`
     }),
     (req, res) => {
+        // Update IP for Google Users
+        // Note: We need to do this async but we are in a non-async callback wrapper if not careful.
+        // However, express handlers support async. But here it is defined as (req, res) =>.
+        // We can just fire and forget or wrap it.
+        // Best approach is properly wait.
+        const updateUserIp = async () => {
+            if (req.user) {
+                req.user.ipAddress = getIp(req);
+                await req.user.save();
+            }
+        };
+        updateUserIp();
+
         // Generate JWT token
         const token = generateToken(req.user._id);
 

@@ -92,4 +92,33 @@ router.get('/announcements/public', async (req, res) => {
     }
 });
 
+// @route   GET /api/admin/users
+// @desc    Get all users
+// @access  Admin
+router.get('/users', protect, admin, async (req, res) => {
+    try {
+        const users = await User.find().sort({ createdAt: -1 }).select('-password');
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to fetch users' });
+    }
+});
+
+// @route   DELETE /api/admin/users/:id
+// @desc    Delete user
+// @access  Admin
+router.delete('/users/:id', protect, admin, async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        await user.deleteOne();
+        res.json({ message: 'User removed' });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to delete user' });
+    }
+});
+
 module.exports = router;
