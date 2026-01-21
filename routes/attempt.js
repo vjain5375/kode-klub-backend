@@ -53,6 +53,25 @@ router.get('/history', protect, async (req, res) => {
   }
 });
 
+// DELETE /api/attempt/:id - Delete an attempt (Admin only)
+router.delete('/:id', protect, async (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Access denied' });
+  }
+
+  try {
+    const attempt = await Attempt.findById(req.params.id);
+    if (!attempt) {
+      return res.status(404).json({ message: 'Attempt not found' });
+    }
+
+    await attempt.deleteOne();
+    res.json({ message: 'Attempt deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 router.post('/submit', async (req, res) => {
   try {
     const { quizId, answers, timeTaken, studentName, studentId } = req.body;

@@ -29,13 +29,40 @@ router.get('/quiz/:quizId', async (req, res) => {
       });
     }
 
-    const leaderboard = await Attempt.find({
-      quizId,
-      studentName: { $exists: true, $ne: '' }
-    })
-      .sort({ score: -1, timeTaken: 1, createdAt: 1 })
-      .select('studentName studentId score timeTaken createdAt')
-      .limit(100);
+    // Use aggregation to group by user and pick best score (prevents duplicates)
+    const leaderboard = await Attempt.aggregate([
+      {
+        $match: {
+          quizId: new mongoose.Types.ObjectId(quizId),
+          studentName: { $exists: true, $ne: '' }
+        }
+      },
+      // Sort first to ensure we pick the best attempt for each user
+      { $sort: { score: -1, timeTaken: 1, createdAt: 1 } },
+      {
+        $group: {
+          _id: {
+            $ifNull: ["$userId", "$studentId"] // Group by userId if present, else studentId (email)
+          },
+          doc: { $first: "$$ROOT" } // Pick determining attempt
+        }
+      },
+      {
+        $replaceRoot: { newRoot: "$doc" } // Promote that doc to top level
+      },
+      // Sort the final unique list
+      { $sort: { score: -1, timeTaken: 1, createdAt: 1 } },
+      { $limit: 100 },
+      {
+        $project: {
+          studentName: 1,
+          studentId: 1,
+          score: 1,
+          timeTaken: 1,
+          createdAt: 1
+        }
+      }
+    ]);
 
     res.json({
       visible: true,
