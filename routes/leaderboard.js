@@ -175,7 +175,7 @@ router.get('/admin/all', protect, async (req, res) => {
       quizzes.map(async (quiz) => {
         const attempts = await Attempt.find({ quizId: quiz._id })
           .sort({ score: -1, timeTaken: 1 })
-          .select('studentName score timeTaken createdAt')
+          .select('_id studentName score timeTaken createdAt')
           .limit(10);
 
         return {
